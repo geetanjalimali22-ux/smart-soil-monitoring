@@ -543,18 +543,9 @@ def create_pdf_report(report, recommendation):
 
     image_data = [
         [
-            Paragraph(
-                "<b>Parameter</b>",
-                body_style
-            ),
-            Paragraph(
-                "<b>Measured Result</b>",
-                body_style
-            ),
-            Paragraph(
-                "<b>Interpretation</b>",
-                body_style
-            )
+            "Parameter",
+            "Measured Result",
+            "Interpretation"
         ],
         [
             "Green Area",
@@ -573,12 +564,7 @@ def create_pdf_report(report, recommendation):
         ],
         [
             "Visible Plant Stress",
-            str(
-                report.get(
-                    "Visible Plant Stress Score",
-                    "-"
-                )
-            ),
+            str(report.get("Visible Plant Stress Score", "-")),
             "Screening indicator from image features"
         ]
     ]
