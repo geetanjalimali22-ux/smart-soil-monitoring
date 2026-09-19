@@ -1733,7 +1733,7 @@ if uploaded_file is not None:
     Green Area: {green_percentage:.2f}%
     Green Coverage: {leaf_area_percentage:.2f}%
     Average Leaf Hue: {average_hue:.2f}
-    Stress Score: {stress_score}/100
+    Visible Stress Score: {stress_score}/100
     Risk Level: {stress_level}
     Health Status: {status}
     Growth Status: {growth_status}
