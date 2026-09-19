@@ -849,8 +849,32 @@ if uploaded_file is not None:
     # STRESS VISUALIZATION
     # --------------------------------------------------
 
-    st.subheader("📈 Stress Level Visualization")
+    st.subheader("📊 Stress & Crop Condition Dashboard")
 
+    # Create dashboard columns
+    dash1, dash2, dash3 = st.columns(3)
+
+    with dash1:
+        st.metric(
+            "🌿 Green Area",
+            f"{green_percentage:.1f}%"
+        )
+
+    with dash2:
+        st.metric(
+            "🎨 Leaf Hue",
+            f"{average_hue:.1f}"
+        )
+
+    with dash3:
+        st.metric(
+            "🧂 Stress Score",
+            f"{stress_score:.1f}/100"
+        )
+
+    st.divider()
+
+    # Visual comparison of image-based indicators
     chart_data = pd.DataFrame({
         "Parameter": [
             "Green Area",
@@ -865,13 +889,31 @@ if uploaded_file is not None:
     })
 
     st.bar_chart(
-        chart_data.set_index("Parameter")
+        chart_data.set_index("Parameter"),
+        use_container_width=True
     )
 
     st.caption(
-        "0 = very low visible stress | "
-        "100 = very high visible stress"
+        "The chart shows image-based indicators. "
+        "Stress Score is an estimated visual screening value, "
+        "not a direct measurement of soil salinity."
     )
+
+    # Stress interpretation
+    if stress_score <= 30:
+        st.success(
+            "🟢 Low visible plant stress detected."
+        )
+    elif stress_score <= 60:
+        st.warning(
+            "🟡 Moderate visible plant stress detected. "
+            "Check soil EC and other crop conditions."
+        )
+    else:
+        st.error(
+            "🔴 High visible plant stress detected. "
+            "Verify soil EC and investigate other possible causes."
+        )
 
     # --------------------------------------------------
     # RESULT
