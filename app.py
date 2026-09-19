@@ -553,9 +553,9 @@ def create_pdf_report(report, recommendation):
             "Image-based green coverage"
         ],
         [
-            "Leaf Area",
-            str(report.get("Leaf Area", "-")),
-            "Estimated visible leaf coverage"
+            "Green Coverage",
+            str(report.get("Green Coverage", "-")),
+            "Percentage of image pixels detected as green (%)"
         ],
         [
             "Average Leaf Hue",
@@ -1113,7 +1113,7 @@ st.sidebar.subheader("Analyzed Parameters")
 
 st.sidebar.write(
     "🌿 Green Area\n"
-    "🍃 Leaf Area\n"
+    "🍃 Green Coverage\n"
     "🎨 Leaf Color\n"
     "🧂 Stress Score\n"
     "🌱 Growth Status"
@@ -1248,7 +1248,7 @@ if uploaded_file is not None:
 
     with col2:
         st.metric(
-            "🍃 Leaf Area",
+            "🌿 Green Coverage",
             f"{leaf_area_percentage:.2f}%"
         )
 
@@ -1631,8 +1631,8 @@ if uploaded_file is not None:
         "Growth Stage": growth_stage,
         "Crop Health": health_status,
         "Soil EC": f"{soil_ec:.2f} dS/m",
-        "Green Area": f"{green_percentage:.2f}%",
-        "Leaf Area": f"{leaf_area_percentage:.2f}%",
+        "Green Coverage": f"{green_percentage:.2f}%",
+        "Green Area": f"{leaf_area_percentage:.2f}%",
         "Average Leaf Hue": f"{average_hue:.2f}",
         "Visible Plant Stress Score": f"{stress_score}/100",
         "Risk Level": stress_level,
@@ -1731,9 +1731,8 @@ if uploaded_file is not None:
     Crop: {crop}
 
     Green Area: {green_percentage:.2f}%
-    Leaf Area: {leaf_area_percentage:.2f}%
+    Green Coverage: {leaf_area_percentage:.2f}%
     Average Leaf Hue: {average_hue:.2f}
-
     Stress Score: {stress_score}/100
     Risk Level: {stress_level}
     Health Status: {status}
