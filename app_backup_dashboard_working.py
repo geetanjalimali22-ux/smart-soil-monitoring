@@ -19,7 +19,6 @@ def create_pdf_report(report, recommendation):
     from io import BytesIO
     from datetime import datetime
     from zoneinfo import ZoneInfo
-    from xml.sax.saxutils import escape
 
     from reportlab.lib import colors
     from reportlab.lib.enums import TA_CENTER, TA_LEFT
@@ -36,35 +35,26 @@ def create_pdf_report(report, recommendation):
     )
 
     # ---------------------------------------------------------
-    # BASIC INFORMATION
-    # ---------------------------------------------------------
-
-    generated_at = datetime.now(
-        ZoneInfo("Asia/Kolkata")
-    )
-
-    date_text = generated_at.strftime("%d %B %Y")
-    time_text = generated_at.strftime("%I:%M %p")
-
-    report_id = generated_at.strftime(
-        "SSM-%Y%m%d-%H%M%S"
-    )
-
-    college_name = (
-        "K. E. Society's Rajarambapu Institute of Technology"
-    )
-
-    department = (
-        "Electronics & Telecommunication Engineering"
-    )
-
-    academic_year = "Environmental Science Project - AY 2026-27"
-
-    # ---------------------------------------------------------
     # PDF BUFFER
     # ---------------------------------------------------------
 
     pdf_buffer = BytesIO()
+
+    # ---------------------------------------------------------
+    # DATE, TIME AND REPORT ID
+    # ---------------------------------------------------------
+
+    generated_at = datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).strftime("%d %B %Y, %I:%M %p")
+
+    report_id = datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).strftime("SSM-%Y%m%d-%H%M%S")
+
+    # ---------------------------------------------------------
+    # PDF DOCUMENT
+    # ---------------------------------------------------------
 
     doc = SimpleDocTemplate(
         pdf_buffer,
@@ -79,23 +69,18 @@ def create_pdf_report(report, recommendation):
     # COLORS
     # ---------------------------------------------------------
 
-    dark_green = colors.HexColor("#166534")
-    medium_green = colors.HexColor("#22C55E")
-    light_green = colors.HexColor("#DCFCE7")
-    very_light_green = colors.HexColor("#F0FDF4")
+    dark_green = colors.HexColor("#176B3A")
+    medium_green = colors.HexColor("#2E8B57")
+    light_green = colors.HexColor("#EAF6EE")
+    very_light_green = colors.HexColor("#F5FBF7")
 
-    dark_blue = colors.HexColor("#1E3A8A")
-    light_blue = colors.HexColor("#EFF6FF")
-
-    dark_text = colors.HexColor("#1F2937")
-    medium_gray = colors.HexColor("#6B7280")
-    light_gray = colors.HexColor("#F3F4F6")
-    border_gray = colors.HexColor("#D1D5DB")
-
-    warning_bg = colors.HexColor("#FEF3C7")
-    warning_border = colors.HexColor("#F59E0B")
-
+    dark_text = colors.HexColor("#263238")
+    grey_text = colors.HexColor("#5F6B66")
+    light_grey = colors.HexColor("#E5E9E7")
     white = colors.white
+
+    warning_bg = colors.HexColor("#FFF7E6")
+    warning_border = colors.HexColor("#E6A700")
 
     # ---------------------------------------------------------
     # STYLES
@@ -104,108 +89,90 @@ def create_pdf_report(report, recommendation):
     styles = getSampleStyleSheet()
 
     title_style = ParagraphStyle(
-        "PDFTitle",
+        "ProfessionalTitle",
         parent=styles["Title"],
         fontName="Helvetica-Bold",
-        fontSize=23,
-        leading=27,
-        alignment=TA_CENTER,
+        fontSize=24,
+        leading=28,
         textColor=dark_green,
-        spaceAfter=5
+        alignment=TA_CENTER,
+        spaceAfter=6
     )
 
     subtitle_style = ParagraphStyle(
-        "PDFSubtitle",
+        "ProfessionalSubtitle",
         parent=styles["Normal"],
         fontName="Helvetica",
         fontSize=11,
         leading=15,
+        textColor=grey_text,
         alignment=TA_CENTER,
-        textColor=medium_gray,
-        spaceAfter=5
+        spaceAfter=4
     )
 
     college_style = ParagraphStyle(
-        "PDFCollege",
+        "CollegeStyle",
         parent=styles["Normal"],
         fontName="Helvetica-Bold",
-        fontSize=10.5,
-        leading=14,
+        fontSize=11,
+        leading=15,
+        textColor=dark_text,
         alignment=TA_CENTER,
-        textColor=dark_blue,
         spaceAfter=2
     )
 
-    center_small = ParagraphStyle(
-        "CenterSmall",
+    project_style = ParagraphStyle(
+        "ProjectStyle",
         parent=styles["Normal"],
         fontName="Helvetica",
-        fontSize=8.5,
-        leading=12,
+        fontSize=9.5,
+        leading=13,
+        textColor=grey_text,
         alignment=TA_CENTER,
-        textColor=medium_gray
+        spaceAfter=3
     )
 
     section_style = ParagraphStyle(
-        "Section",
+        "SectionStyle",
         parent=styles["Heading2"],
         fontName="Helvetica-Bold",
         fontSize=14,
         leading=18,
-        alignment=TA_LEFT,
         textColor=dark_green,
+        alignment=TA_LEFT,
         spaceBefore=8,
         spaceAfter=8
     )
 
     body_style = ParagraphStyle(
-        "Body",
-        parent=styles["Normal"],
-        fontName="Helvetica",
-        fontSize=9.2,
-        leading=13.5,
-        alignment=TA_LEFT,
-        textColor=dark_text
-    )
-
-    small_style = ParagraphStyle(
-        "Small",
-        parent=styles["Normal"],
-        fontName="Helvetica",
-        fontSize=8,
-        leading=11,
-        alignment=TA_LEFT,
-        textColor=medium_gray
-    )
-
-    metric_value_style = ParagraphStyle(
-        "MetricValue",
-        parent=styles["Normal"],
-        fontName="Helvetica-Bold",
-        fontSize=16,
-        leading=19,
-        alignment=TA_CENTER,
-        textColor=dark_green
-    )
-
-    metric_label_style = ParagraphStyle(
-        "MetricLabel",
-        parent=styles["Normal"],
-        fontName="Helvetica",
-        fontSize=8,
-        leading=10,
-        alignment=TA_CENTER,
-        textColor=medium_gray
-    )
-
-    recommendation_style = ParagraphStyle(
-        "Recommendation",
+        "BodyStyle",
         parent=styles["Normal"],
         fontName="Helvetica",
         fontSize=9.5,
         leading=14,
+        textColor=dark_text,
         alignment=TA_LEFT,
-        textColor=dark_text
+        spaceAfter=5
+    )
+
+    small_style = ParagraphStyle(
+        "SmallStyle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=8.5,
+        leading=12,
+        textColor=grey_text,
+        alignment=TA_LEFT
+    )
+
+    recommendation_style = ParagraphStyle(
+        "RecommendationStyle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=10,
+        leading=15,
+        textColor=dark_text,
+        alignment=TA_LEFT
     )
 
     # ---------------------------------------------------------
@@ -218,9 +185,9 @@ def create_pdf_report(report, recommendation):
 
         width, height = A4
 
-        canvas.setStrokeColor(border_gray)
-        canvas.setLineWidth(0.6)
-
+        # Footer line
+        canvas.setStrokeColor(light_grey)
+        canvas.setLineWidth(0.7)
         canvas.line(
             18 * mm,
             12 * mm,
@@ -228,19 +195,14 @@ def create_pdf_report(report, recommendation):
             12 * mm
         )
 
-        canvas.setFont(
-            "Helvetica",
-            7.5
-        )
-
-        canvas.setFillColor(
-            medium_gray
-        )
+        # Footer text
+        canvas.setFont("Helvetica", 7.5)
+        canvas.setFillColor(grey_text)
 
         canvas.drawString(
             18 * mm,
             7 * mm,
-            "Smart Soil Monitoring"
+            "Smart Soil Monitoring | Crop Health & Soil Salinity Assessment"
         )
 
         canvas.drawRightString(
@@ -275,567 +237,141 @@ def create_pdf_report(report, recommendation):
         )
     )
 
+    story.append(Spacer(1, 5))
+
+    # College
     story.append(
         Paragraph(
-            escape(college_name),
+            "K. E. Society's Rajarambapu Institute of Technology",
             college_style
         )
     )
 
     story.append(
         Paragraph(
-            escape(department),
-            center_small
+            "Department of Electronics & Telecommunication Engineering",
+            project_style
         )
     )
 
     story.append(
         Paragraph(
-            escape(academic_year),
-            center_small
+            "Environmental Science Project - AY 2026-27",
+            project_style
         )
     )
 
-    story.append(
-        Spacer(1, 10)
-    )
+    story.append(Spacer(1, 8))
 
     # ---------------------------------------------------------
-    # REPORT INFORMATION
+    # REPORT INFORMATION BOX
     # ---------------------------------------------------------
 
-    information_data = [
+    report_info = [
         [
-            Paragraph(
-                "<b>Report ID</b>",
-                small_style
-            ),
-            Paragraph(
-                escape(report_id),
-                small_style
-            ),
-            Paragraph(
-                "<b>Generated</b>",
-                small_style
-            ),
-            Paragraph(
-                escape(
-                    f"{date_text}, {time_text} IST"
-                ),
-                small_style
-            )
+            Paragraph("<b>Report Generated</b>", small_style),
+            Paragraph(generated_at, small_style),
+            Paragraph("<b>Report ID</b>", small_style),
+            Paragraph(report_id, small_style)
         ]
     ]
 
-    information_table = Table(
-        information_data,
-        colWidths=[
-            27 * mm,
-            43 * mm,
-            25 * mm,
-            65 * mm
-        ]
+    report_info_table = Table(
+        report_info,
+        colWidths=[32 * mm, 48 * mm, 25 * mm, 55 * mm]
     )
 
-    information_table.setStyle(
+    report_info_table.setStyle(
         TableStyle([
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, -1),
-                light_blue
-            ),
-            (
-                "BOX",
-                (0, 0),
-                (-1, -1),
-                0.8,
-                border_gray
-            ),
-            (
-                "INNERGRID",
-                (0, 0),
-                (-1, -1),
-                0.3,
-                border_gray
-            ),
-            (
-                "VALIGN",
-                (0, 0),
-                (-1, -1),
-                "MIDDLE"
-            ),
-            (
-                "LEFTPADDING",
-                (0, 0),
-                (-1, -1),
-                6
-            ),
-            (
-                "RIGHTPADDING",
-                (0, 0),
-                (-1, -1),
-                6
-            ),
-            (
-                "TOPPADDING",
-                (0, 0),
-                (-1, -1),
-                6
-            ),
-            (
-                "BOTTOMPADDING",
-                (0, 0),
-                (-1, -1),
-                6
-            )
+            ("BACKGROUND", (0, 0), (-1, -1), very_light_green),
+            ("BOX", (0, 0), (-1, -1), 0.8, medium_green),
+            ("INNERGRID", (0, 0), (-1, -1), 0.3, light_grey),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 7),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ])
     )
 
-    story.append(
-        information_table
-    )
-
-    story.append(
-        Spacer(1, 13)
-    )
+    story.append(report_info_table)
+    story.append(Spacer(1, 14))
 
     # ---------------------------------------------------------
-    # EXECUTIVE SUMMARY
+    # CROP & SOIL INFORMATION
     # ---------------------------------------------------------
 
     story.append(
         Paragraph(
-            "1. Assessment Summary",
+            "1. Crop & Soil Information",
             section_style
         )
     )
 
-    summary_data = [
+    report_data = [
         [
-            Paragraph(
-                "<b>Crop</b>",
-                metric_label_style
-            ),
-            Paragraph(
-                "<b>Growth Stage</b>",
-                metric_label_style
-            ),
-            Paragraph(
-                "<b>Soil EC</b>",
-                metric_label_style
-            ),
-            Paragraph(
-                "<b>Stress Score</b>",
-                metric_label_style
-            )
-        ],
-        [
-            Paragraph(
-                escape(
-                    str(report.get("Crop", "-"))
-                ),
-                metric_value_style
-            ),
-            Paragraph(
-                escape(
-                    str(report.get("Growth Stage", "-"))
-                ),
-                metric_value_style
-            ),
-            Paragraph(
-                escape(
-                    str(report.get("Soil EC", "-"))
-                ),
-                metric_value_style
-            ),
-            Paragraph(
-                escape(
-                    str(
-                        report.get(
-                            "Visible Plant Stress Score",
-                            "-"
-                        )
-                    )
-                ),
-                metric_value_style
-            )
+            Paragraph("<b>Parameter</b>", body_style),
+            Paragraph("<b>Result</b>", body_style)
         ]
     ]
 
-    summary_table = Table(
-        summary_data,
-        colWidths=[
-            40 * mm,
-            45 * mm,
-            35 * mm,
-            40 * mm
-        ]
-    )
+    for key, value in report.items():
 
-    summary_table.setStyle(
-        TableStyle([
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, 0),
-                very_light_green
-            ),
-            (
-                "BACKGROUND",
-                (0, 1),
-                (-1, 1),
-                white
-            ),
-            (
-                "BOX",
-                (0, 0),
-                (-1, -1),
-                0.8,
-                medium_green
-            ),
-            (
-                "INNERGRID",
-                (0, 0),
-                (-1, -1),
-                0.4,
-                border_gray
-            ),
-            (
-                "VALIGN",
-                (0, 0),
-                (-1, -1),
-                "MIDDLE"
-            ),
-            (
-                "TOPPADDING",
-                (0, 0),
-                (-1, -1),
-                7
-            ),
-            (
-                "BOTTOMPADDING",
-                (0, 0),
-                (-1, -1),
-                7
-            )
+        report_data.append([
+            Paragraph(str(key), body_style),
+            Paragraph(str(value), body_style)
         ])
-    )
 
-    story.append(
-        summary_table
-    )
-
-    story.append(
-        Spacer(1, 14)
-    )
-
-    # ---------------------------------------------------------
-    # IMAGE ANALYSIS RESULTS
-    # ---------------------------------------------------------
-
-    story.append(
-        Paragraph(
-            "2. Plant Image Analysis",
-            section_style
-        )
-    )
-
-    image_data = [
-    [
-        "Parameter",
-        "Measured Result",
-        "Interpretation"
-    ],
-    [
-        "Green Coverage",
-        str(report.get("Green Coverage", "-")),
-        "Percentage of image pixels detected as green"
-    ],
-    [
-        "Previous Green Coverage",
-        str(report.get("Previous Green Coverage", "-")),
-        "Previous image green coverage"
-    ],
-    [
-        "Green Coverage Change",
-        str(report.get("Green Coverage Change", "-")),
-        "Change compared with previous image"
-    ],
-    [
-        "Average Leaf Hue",
-        str(report.get("Average Leaf Hue", "-")),
-        "Image-based color indicator"
-    ],
-    [
-        "Visible Plant Stress",
-        str(report.get("Visible Plant Stress Score", "-")),
-        "Screening indicator from image features"
-    ]
-]
-
-  
-
-    image_table_data = []
-
-    for row_index, row in enumerate(image_data):
-
-        formatted_row = []
-
-        for value in row:
-
-            if row_index == 0:
-                formatted_row.append(
-                    Paragraph(
-                        str(value),
-                        body_style
-                    )
-                )
-            else:
-                formatted_row.append(
-                    Paragraph(
-                        escape(str(value)),
-                        body_style
-                    )
-                )
-
-        image_table_data.append(
-            formatted_row
-        )
-
-    image_table = Table(
-        image_table_data,
-        colWidths=[
-            43 * mm,
-            42 * mm,
-            75 * mm
-        ],
+    report_table = Table(
+        report_data,
+        colWidths=[65 * mm, 95 * mm],
         repeatRows=1
     )
 
-    image_table.setStyle(
-        TableStyle([
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, 0),
-                dark_green
-            ),
-            (
-                "TEXTCOLOR",
-                (0, 0),
-                (-1, 0),
-                white
-            ),
-            (
-                "BOX",
-                (0, 0),
-                (-1, -1),
-                0.8,
-                border_gray
-            ),
-            (
-                "INNERGRID",
-                (0, 0),
-                (-1, -1),
-                0.35,
-                border_gray
-            ),
-            (
-                "ROWBACKGROUNDS",
-                (0, 1),
-                (-1, -1),
-                [white, very_light_green]
-            ),
-            (
-                "VALIGN",
-                (0, 0),
-                (-1, -1),
-                "MIDDLE"
-            ),
-            (
-                "LEFTPADDING",
-                (0, 0),
-                (-1, -1),
-                6
-            ),
-            (
-                "RIGHTPADDING",
-                (0, 0),
-                (-1, -1),
-                6
-            ),
-            (
-                "TOPPADDING",
-                (0, 0),
-                (-1, -1),
-                6
-            ),
-            (
-                "BOTTOMPADDING",
-                (0, 0),
-                (-1, -1),
-                6
-            )
-        ])
-    )
+    table_style_commands = [
+        ("BACKGROUND", (0, 0), (-1, 0), dark_green),
+        ("TEXTCOLOR", (0, 0), (-1, 0), white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
 
-    story.append(
-        image_table
-    )
+        ("BOX", (0, 0), (-1, -1), 0.8, dark_green),
+        ("INNERGRID", (0, 0), (-1, -1), 0.35, light_grey),
 
-    story.append(
-        Spacer(1, 14)
-    )
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
 
-    # ---------------------------------------------------------
-    # ASSESSMENT RESULT
-    # ---------------------------------------------------------
-
-    story.append(
-        Paragraph(
-            "3. Assessment Result",
-            section_style
-        )
-    )
-
-    result_data = [
-        [
-            Paragraph(
-                "<b>Assessment</b>",
-                body_style
-            ),
-            Paragraph(
-                "<b>Result</b>",
-                body_style
-            )
-        ],
-        [
-            "Crop Health",
-            str(
-                report.get(
-                    "Crop Health",
-                    "-"
-                )
-            )
-        ],
-        [
-            "Salinity Risk",
-            str(
-                report.get(
-                    "Risk Level",
-                    "-"
-                )
-            )
-        ],
-        [
-            "Growth Status",
-            str(
-                report.get(
-                    "Growth Status",
-                    "-"
-                )
-            )
-        ]
+        ("LEFTPADDING", (0, 0), (-1, -1), 7),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
     ]
 
-    result_table_data = []
+    # Alternating row backgrounds
+    for row_number in range(1, len(report_data)):
 
-    for row_index, row in enumerate(result_data):
-
-        if row_index == 0:
-            # Header cells are already Paragraph objects
-            result_table_data.append(row)
-
+        if row_number % 2 == 0:
+            table_style_commands.append(
+                (
+                    "BACKGROUND",
+                    (0, row_number),
+                    (-1, row_number),
+                    very_light_green
+                )
+            )
         else:
-            result_table_data.append([
-                Paragraph(
-                    escape(str(row[0])),
-                    body_style
-                ),
-                Paragraph(
-                    escape(str(row[1])),
-                    body_style
+            table_style_commands.append(
+                (
+                    "BACKGROUND",
+                    (0, row_number),
+                    (-1, row_number),
+                    white
                 )
-            ])
-
-    result_table = Table(
-        result_table_data,
-        colWidths=[
-            60 * mm,
-            100 * mm
-        ],
-        repeatRows=1
-    )
-
-    result_table.setStyle(
-        TableStyle([
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, 0),
-                dark_blue
-            ),
-            (
-                "TEXTCOLOR",
-                (0, 0),
-                (-1, 0),
-                white
-            ),
-            (
-                "ROWBACKGROUNDS",
-                (0, 1),
-                (-1, -1),
-                [white, light_gray]
-            ),
-            (
-                "BOX",
-                (0, 0),
-                (-1, -1),
-                0.8,
-                border_gray
-            ),
-            (
-                "INNERGRID",
-                (0, 0),
-                (-1, -1),
-                0.35,
-                border_gray
-            ),
-            (
-                "LEFTPADDING",
-                (0, 0),
-                (-1, -1),
-                7
-            ),
-            (
-                "RIGHTPADDING",
-                (0, 0),
-                (-1, -1),
-                7
-            ),
-            (
-                "TOPPADDING",
-                (0, 0),
-                (-1, -1),
-                7
-            ),
-            (
-                "BOTTOMPADDING",
-                (0, 0),
-                (-1, -1),
-                7
             )
-        ])
+
+    report_table.setStyle(
+        TableStyle(table_style_commands)
     )
 
-    story.append(
-        result_table
-    )
-
-    story.append(
-        Spacer(1, 14)
-    )
+    story.append(report_table)
+    story.append(Spacer(1, 14))
 
     # ---------------------------------------------------------
     # MANAGEMENT RECOMMENDATION
@@ -843,154 +379,84 @@ def create_pdf_report(report, recommendation):
 
     story.append(
         Paragraph(
-            "4. Management Recommendation",
+            "2. Management Recommendation",
             section_style
         )
     )
 
     recommendation_box = Table(
-        [[
-            Paragraph(
-                escape(
-                    str(recommendation)
-                ),
-                recommendation_style
-            )
-        ]],
+        [
+            [
+                Paragraph(
+                    recommendation,
+                    recommendation_style
+                )
+            ]
+        ],
         colWidths=[160 * mm]
     )
 
     recommendation_box.setStyle(
         TableStyle([
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, -1),
-                light_green
-            ),
-            (
-                "BOX",
-                (0, 0),
-                (-1, -1),
-                1.0,
-                medium_green
-            ),
-            (
-                "LEFTPADDING",
-                (0, 0),
-                (-1, -1),
-                12
-            ),
-            (
-                "RIGHTPADDING",
-                (0, 0),
-                (-1, -1),
-                12
-            ),
-            (
-                "TOPPADDING",
-                (0, 0),
-                (-1, -1),
-                11
-            ),
-            (
-                "BOTTOMPADDING",
-                (0, 0),
-                (-1, -1),
-                11
-            )
+            ("BACKGROUND", (0, 0), (-1, -1), light_green),
+            ("BOX", (0, 0), (-1, -1), 1.0, medium_green),
+            ("LEFTPADDING", (0, 0), (-1, -1), 12),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+            ("TOPPADDING", (0, 0), (-1, -1), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ])
     )
 
-    story.append(
-        recommendation_box
-    )
-
-    story.append(
-        Spacer(1, 14)
-    )
+    story.append(recommendation_box)
+    story.append(Spacer(1, 14))
 
     # ---------------------------------------------------------
-    # IMPORTANT SCIENTIFIC NOTE
+    # IMPORTANT INTERPRETATION NOTE
     # ---------------------------------------------------------
 
     story.append(
         Paragraph(
-            "5. Important Interpretation Note",
+            "3. Important Interpretation Note",
             section_style
         )
     )
 
     note_text = (
-        "<b>Screening / advisory assessment:</b><br/>"
-        "This system uses plant-image features and the entered soil EC "
-        "to provide a preliminary crop-condition assessment. "
-        "A photograph alone cannot directly measure soil salinity. "
-        "Actual soil salinity should be verified using an appropriate "
-        "electrical-conductivity test and suitable soil sampling method. "
-        "Crop appearance can also be affected by irrigation, drainage, "
+        "This report provides an image-based visual assessment of crop "
+        "condition and a screening assessment using the entered soil EC. "
+        "Plant photographs alone cannot directly measure soil salinity. "
+        "For actual salinity assessment, soil electrical conductivity "
+        "(EC) should be measured using an appropriate soil testing method. "
+        "Crop response can also be affected by irrigation, drainage, "
         "nutrient availability, drought, disease and other environmental factors."
     )
 
     note_box = Table(
-        [[
-            Paragraph(
-                note_text,
-                small_style
-            )
-        ]],
+        [
+            [
+                Paragraph(
+                    note_text,
+                    small_style
+                )
+            ]
+        ],
         colWidths=[160 * mm]
     )
 
     note_box.setStyle(
         TableStyle([
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, -1),
-                warning_bg
-            ),
-            (
-                "BOX",
-                (0, 0),
-                (-1, -1),
-                0.8,
-                warning_border
-            ),
-            (
-                "LEFTPADDING",
-                (0, 0),
-                (-1, -1),
-                12
-            ),
-            (
-                "RIGHTPADDING",
-                (0, 0),
-                (-1, -1),
-                12
-            ),
-            (
-                "TOPPADDING",
-                (0, 0),
-                (-1, -1),
-                10
-            ),
-            (
-                "BOTTOMPADDING",
-                (0, 0),
-                (-1, -1),
-                10
-            )
+            ("BACKGROUND", (0, 0), (-1, -1), warning_bg),
+            ("BOX", (0, 0), (-1, -1), 0.8, warning_border),
+            ("LEFTPADDING", (0, 0), (-1, -1), 12),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+            ("TOPPADDING", (0, 0), (-1, -1), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
         ])
     )
 
-    story.append(
-        note_box
-    )
-
-    story.append(
-        Spacer(1, 12)
-    )
+    story.append(note_box)
+    story.append(Spacer(1, 12))
 
     # ---------------------------------------------------------
     # PROJECT DESCRIPTION
@@ -998,17 +464,17 @@ def create_pdf_report(report, recommendation):
 
     story.append(
         Paragraph(
-            "6. About the Project",
+            "4. About the Project",
             section_style
         )
     )
 
     project_description = (
-        "Smart Soil Monitoring is an AI-assisted Environmental Science "
-        "project that combines plant image analysis, crop growth-stage "
-        "information and soil EC input to study visible crop responses "
-        "associated with soil salinity. The system generates a crop-health "
-        "screening report and basic management guidance."
+        "Smart Soil Monitoring is an AI-assisted environmental monitoring "
+        "project designed to study visible crop responses associated with "
+        "soil salinity. The system combines plant image analysis, crop "
+        "growth-stage information and soil EC input to generate a "
+        "crop-health screening report and basic management guidance."
     )
 
     story.append(
@@ -1018,64 +484,37 @@ def create_pdf_report(report, recommendation):
         )
     )
 
-    story.append(
-        Spacer(1, 12)
-    )
+    story.append(Spacer(1, 10))
 
     # ---------------------------------------------------------
-    # FINAL FOOTER BOX
+    # FINAL STATEMENT
     # ---------------------------------------------------------
 
-    final_box = Table(
-        [[
-            Paragraph(
-                "<b>Smart Soil Monitoring Application</b><br/>"
-                "Environmental Science Project | AY 2026-27",
-                center_small
-            )
-        ]],
+    final_statement = Table(
+        [
+            [
+                Paragraph(
+                    "<b>Generated by Smart Soil Monitoring Application</b>",
+                    body_style
+                )
+            ]
+        ],
         colWidths=[160 * mm]
     )
 
-    final_box.setStyle(
+    final_statement.setStyle(
         TableStyle([
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, -1),
-                very_light_green
-            ),
-            (
-                "BOX",
-                (0, 0),
-                (-1, -1),
-                0.7,
-                border_gray
-            ),
-            (
-                "ALIGN",
-                (0, 0),
-                (-1, -1),
-                "CENTER"
-            ),
-            (
-                "TOPPADDING",
-                (0, 0),
-                (-1, -1),
-                8
-            ),
-            (
-                "BOTTOMPADDING",
-                (0, 0),
-                (-1, -1),
-                8
-            )
+            ("BACKGROUND", (0, 0), (-1, -1), very_light_green),
+            ("BOX", (0, 0), (-1, -1), 0.7, light_grey),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, -1), 8),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
         ])
     )
 
-    story.append(
-        final_box
-    )
+    story.append(final_statement)
 
     # ---------------------------------------------------------
     # BUILD PDF
@@ -1120,7 +559,7 @@ st.sidebar.subheader("Analyzed Parameters")
 
 st.sidebar.write(
     "🌿 Green Area\n"
-    "🍃 Green Coverage\n"
+    "🍃 Leaf Area\n"
     "🎨 Leaf Color\n"
     "🧂 Stress Score\n"
     "🌱 Growth Status"
@@ -1255,7 +694,7 @@ if uploaded_file is not None:
 
     with col2:
         st.metric(
-            "🌿 Green Coverage",
+            "🍃 Leaf Area",
             f"{leaf_area_percentage:.2f}%"
         )
 
@@ -1475,7 +914,6 @@ if uploaded_file is not None:
             "🔴 High visible plant stress detected. "
             "Verify soil EC and investigate other possible causes."
         )
-    
 
     # --------------------------------------------------
     # RESULT
@@ -1635,17 +1073,25 @@ if uploaded_file is not None:
         stress_level = "High Salinity Risk"
 
     report = {
-    "Crop": crop,
-    "Growth Stage": growth_stage,
-    "Crop Health": health_status,
-    "Soil EC": f"{soil_ec:.2f} dS/m",
-    "Green Coverage": f"{green_percentage:.2f}%",
-    "Average Leaf Hue": f"{average_hue:.2f}",
-    "Visible Plant Stress Score": f"{stress_score}/100",
-    "Risk Level": stress_level,
-    "Health Status": health_status,
-    "Growth Status": growth_status
-}
+        "Crop": crop,
+        "Growth Stage": growth_stage,
+        "Crop Health": health_status,
+        "Soil EC": f"{soil_ec:.2f} dS/m",
+        "Green Area": f"{green_percentage:.2f}%",
+        "Leaf Area": f"{leaf_area_percentage:.2f}%",
+        "Average Leaf Hue": f"{average_hue:.2f}",
+        "Visible Plant Stress Score": f"{stress_score}/100",
+        "Risk Level": stress_level,
+        "Health Status": health_status,
+        "Growth Status": growth_status
+    }
+
+    report_df = pd.DataFrame(
+        list(report.items()),
+        columns=["Parameter", "Result"]
+    )
+
+    st.table(report_df)
 
     # --------------------------------------------------
     # MANAGEMENT RECOMMENDATION
@@ -1731,9 +1177,10 @@ if uploaded_file is not None:
     Crop: {crop}
 
     Green Area: {green_percentage:.2f}%
-    Green Coverage: {leaf_area_percentage:.2f}%
+    Leaf Area: {leaf_area_percentage:.2f}%
     Average Leaf Hue: {average_hue:.2f}
-    Visible Stress Score: {stress_score}/100
+
+    Stress Score: {stress_score}/100
     Risk Level: {stress_level}
     Health Status: {status}
     Growth Status: {growth_status}

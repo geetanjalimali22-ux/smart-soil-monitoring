@@ -1,5 +1,18 @@
 import cv2
 import numpy as np
+def check_image_quality(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    brightness = np.mean(gray)
+    sharpness = cv2.Laplacian(gray, cv2.CV_64F).var()
+
+    if brightness < 35:
+        return False, "Image is too dark."
+
+    if sharpness < 50:
+        return False, "Image is too blurry."
+
+    return True, "Image quality is acceptable."
 
 
 def analyze_plant_image(image_bytes):
@@ -11,41 +24,99 @@ def analyze_plant_image(image_bytes):
     # Check whether image was loaded correctly
     if image is None:
         return 0, 0, 0
+        quality_ok, quality_message = check_image_quality(image)
 
-    # Convert BGR image to HSV
+    # Resize large images for faster processing
+    max_width = 1000
+
+    height, width = image.shape[:2]
+
+    if width > max_width:
+        scale = max_width / width
+        new_height = int(height * scale)
+
+        image = cv2.resize(
+            image,
+            (max_width, new_height)
+        )
+
+    # Convert BGR to HSV
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     # Green color range
     lower_green = np.array([25, 40, 40])
     upper_green = np.array([90, 255, 255])
 
-    # Detect green plant areas
+    # Detect green regions
     mask = cv2.inRange(
         hsv,
         lower_green,
         upper_green
     )
 
-    # Total image area
-    total_pixels = mask.shape[0] * mask.shape[1]
+    # Remove small noise
+    kernel = np.ones((5, 5), np.uint8)
 
-    # Green pixels
+    mask = cv2.morphologyEx(
+        mask,
+        cv2.MORPH_OPEN,
+        kernel
+    )
+
+    mask = cv2.morphologyEx(
+        mask,
+        cv2.MORPH_CLOSE,
+        kernel
+    )
+
+    # Find connected green regions
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(
+        mask,
+        connectivity=8
+    )
+
+    # Keep the largest green region
+    leaf_mask = np.zeros_like(mask)
+
+    if num_labels > 1:
+
+        largest_label = 1
+        largest_area = stats[1, cv2.CC_STAT_AREA]
+
+        for label in range(2, num_labels):
+
+            area = stats[label, cv2.CC_STAT_AREA]
+
+            if area > largest_area:
+                largest_area = area
+                largest_label = label
+
+        leaf_mask[labels == largest_label] = 255
+
+    # Total image area
+    total_pixels = leaf_mask.shape[0] * leaf_mask.shape[1]
+
+    # Detected plant/leaf pixels
+    leaf_pixels = cv2.countNonZero(leaf_mask)
+
+    # Estimated visible plant area
+    leaf_area_percentage = (
+        leaf_pixels / total_pixels
+    ) * 100
+
+    # Overall green coverage
     green_pixels = cv2.countNonZero(mask)
 
-    # Green area percentage
     green_percentage = (
         green_pixels / total_pixels
     ) * 100
 
-    # Approximate leaf/plant area
-    leaf_area_percentage = green_percentage
-
-    # Average hue of detected green areas
-    if green_pixels > 0:
+    # Average hue of detected plant region
+    if leaf_pixels > 0:
 
         average_hue = cv2.mean(
             hsv,
-            mask=mask
+            mask=leaf_mask
         )[0]
 
     else:
