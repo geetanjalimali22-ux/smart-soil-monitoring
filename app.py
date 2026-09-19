@@ -1,5 +1,534 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from io import BytesIO
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle
+)
+def create_pdf_report(report, recommendation):
+
+    from io import BytesIO
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import (
+        SimpleDocTemplate,
+        Paragraph,
+        Spacer,
+        Table,
+        TableStyle,
+        KeepTogether
+    )
+
+    # ---------------------------------------------------------
+    # PDF BUFFER
+    # ---------------------------------------------------------
+
+    pdf_buffer = BytesIO()
+
+    # ---------------------------------------------------------
+    # DATE, TIME AND REPORT ID
+    # ---------------------------------------------------------
+
+    generated_at = datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).strftime("%d %B %Y, %I:%M %p")
+
+    report_id = datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).strftime("SSM-%Y%m%d-%H%M%S")
+
+    # ---------------------------------------------------------
+    # PDF DOCUMENT
+    # ---------------------------------------------------------
+
+    doc = SimpleDocTemplate(
+        pdf_buffer,
+        pagesize=A4,
+        rightMargin=18 * mm,
+        leftMargin=18 * mm,
+        topMargin=18 * mm,
+        bottomMargin=18 * mm
+    )
+
+    # ---------------------------------------------------------
+    # COLORS
+    # ---------------------------------------------------------
+
+    dark_green = colors.HexColor("#176B3A")
+    medium_green = colors.HexColor("#2E8B57")
+    light_green = colors.HexColor("#EAF6EE")
+    very_light_green = colors.HexColor("#F5FBF7")
+
+    dark_text = colors.HexColor("#263238")
+    grey_text = colors.HexColor("#5F6B66")
+    light_grey = colors.HexColor("#E5E9E7")
+    white = colors.white
+
+    warning_bg = colors.HexColor("#FFF7E6")
+    warning_border = colors.HexColor("#E6A700")
+
+    # ---------------------------------------------------------
+    # STYLES
+    # ---------------------------------------------------------
+
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        "ProfessionalTitle",
+        parent=styles["Title"],
+        fontName="Helvetica-Bold",
+        fontSize=24,
+        leading=28,
+        textColor=dark_green,
+        alignment=TA_CENTER,
+        spaceAfter=6
+    )
+
+    subtitle_style = ParagraphStyle(
+        "ProfessionalSubtitle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=11,
+        leading=15,
+        textColor=grey_text,
+        alignment=TA_CENTER,
+        spaceAfter=4
+    )
+
+    college_style = ParagraphStyle(
+        "CollegeStyle",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=11,
+        leading=15,
+        textColor=dark_text,
+        alignment=TA_CENTER,
+        spaceAfter=2
+    )
+
+    project_style = ParagraphStyle(
+        "ProjectStyle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=9.5,
+        leading=13,
+        textColor=grey_text,
+        alignment=TA_CENTER,
+        spaceAfter=3
+    )
+
+    section_style = ParagraphStyle(
+        "SectionStyle",
+        parent=styles["Heading2"],
+        fontName="Helvetica-Bold",
+        fontSize=14,
+        leading=18,
+        textColor=dark_green,
+        alignment=TA_LEFT,
+        spaceBefore=8,
+        spaceAfter=8
+    )
+
+    body_style = ParagraphStyle(
+        "BodyStyle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=9.5,
+        leading=14,
+        textColor=dark_text,
+        alignment=TA_LEFT,
+        spaceAfter=5
+    )
+
+    small_style = ParagraphStyle(
+        "SmallStyle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=8.5,
+        leading=12,
+        textColor=grey_text,
+        alignment=TA_LEFT
+    )
+
+    recommendation_style = ParagraphStyle(
+        "RecommendationStyle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=10,
+        leading=15,
+        textColor=dark_text,
+        alignment=TA_LEFT
+    )
+
+    # ---------------------------------------------------------
+    # FOOTER
+    # ---------------------------------------------------------
+
+    def add_footer(canvas, document):
+
+        canvas.saveState()
+
+        width, height = A4
+
+        # Footer line
+        canvas.setStrokeColor(light_grey)
+        canvas.setLineWidth(0.7)
+        canvas.line(
+            18 * mm,
+            12 * mm,
+            width - 18 * mm,
+            12 * mm
+        )
+
+        # Footer text
+        canvas.setFont("Helvetica", 7.5)
+        canvas.setFillColor(grey_text)
+
+        canvas.drawString(
+            18 * mm,
+            7 * mm,
+            "Smart Soil Monitoring | Crop Health & Soil Salinity Assessment"
+        )
+
+        canvas.drawRightString(
+            width - 18 * mm,
+            7 * mm,
+            f"Page {document.page}"
+        )
+
+        canvas.restoreState()
+
+    # ---------------------------------------------------------
+    # STORY
+    # ---------------------------------------------------------
+
+    story = []
+
+    # ---------------------------------------------------------
+    # HEADER
+    # ---------------------------------------------------------
+
+    story.append(
+        Paragraph(
+            "SMART SOIL MONITORING",
+            title_style
+        )
+    )
+
+    story.append(
+        Paragraph(
+            "Crop Health & Soil Salinity Assessment Report",
+            subtitle_style
+        )
+    )
+
+    story.append(Spacer(1, 5))
+
+    # College
+    story.append(
+        Paragraph(
+            "K. E. Society's Rajarambapu Institute of Technology",
+            college_style
+        )
+    )
+
+    story.append(
+        Paragraph(
+            "Department of Electronics & Telecommunication Engineering",
+            project_style
+        )
+    )
+
+    story.append(
+        Paragraph(
+            "Environmental Science Project - AY 2026-27",
+            project_style
+        )
+    )
+
+    story.append(Spacer(1, 8))
+
+    # ---------------------------------------------------------
+    # REPORT INFORMATION BOX
+    # ---------------------------------------------------------
+
+    report_info = [
+        [
+            Paragraph("<b>Report Generated</b>", small_style),
+            Paragraph(generated_at, small_style),
+            Paragraph("<b>Report ID</b>", small_style),
+            Paragraph(report_id, small_style)
+        ]
+    ]
+
+    report_info_table = Table(
+        report_info,
+        colWidths=[32 * mm, 48 * mm, 25 * mm, 55 * mm]
+    )
+
+    report_info_table.setStyle(
+        TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), very_light_green),
+            ("BOX", (0, 0), (-1, -1), 0.8, medium_green),
+            ("INNERGRID", (0, 0), (-1, -1), 0.3, light_grey),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 7),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ])
+    )
+
+    story.append(report_info_table)
+    story.append(Spacer(1, 14))
+
+    # ---------------------------------------------------------
+    # CROP & SOIL INFORMATION
+    # ---------------------------------------------------------
+
+    story.append(
+        Paragraph(
+            "1. Crop & Soil Information",
+            section_style
+        )
+    )
+
+    report_data = [
+        [
+            Paragraph("<b>Parameter</b>", body_style),
+            Paragraph("<b>Result</b>", body_style)
+        ]
+    ]
+
+    for key, value in report.items():
+
+        report_data.append([
+            Paragraph(str(key), body_style),
+            Paragraph(str(value), body_style)
+        ])
+
+    report_table = Table(
+        report_data,
+        colWidths=[65 * mm, 95 * mm],
+        repeatRows=1
+    )
+
+    table_style_commands = [
+        ("BACKGROUND", (0, 0), (-1, 0), dark_green),
+        ("TEXTCOLOR", (0, 0), (-1, 0), white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+
+        ("BOX", (0, 0), (-1, -1), 0.8, dark_green),
+        ("INNERGRID", (0, 0), (-1, -1), 0.35, light_grey),
+
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+
+        ("LEFTPADDING", (0, 0), (-1, -1), 7),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]
+
+    # Alternating row backgrounds
+    for row_number in range(1, len(report_data)):
+
+        if row_number % 2 == 0:
+            table_style_commands.append(
+                (
+                    "BACKGROUND",
+                    (0, row_number),
+                    (-1, row_number),
+                    very_light_green
+                )
+            )
+        else:
+            table_style_commands.append(
+                (
+                    "BACKGROUND",
+                    (0, row_number),
+                    (-1, row_number),
+                    white
+                )
+            )
+
+    report_table.setStyle(
+        TableStyle(table_style_commands)
+    )
+
+    story.append(report_table)
+    story.append(Spacer(1, 14))
+
+    # ---------------------------------------------------------
+    # MANAGEMENT RECOMMENDATION
+    # ---------------------------------------------------------
+
+    story.append(
+        Paragraph(
+            "2. Management Recommendation",
+            section_style
+        )
+    )
+
+    recommendation_box = Table(
+        [
+            [
+                Paragraph(
+                    recommendation,
+                    recommendation_style
+                )
+            ]
+        ],
+        colWidths=[160 * mm]
+    )
+
+    recommendation_box.setStyle(
+        TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), light_green),
+            ("BOX", (0, 0), (-1, -1), 1.0, medium_green),
+            ("LEFTPADDING", (0, 0), (-1, -1), 12),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+            ("TOPPADDING", (0, 0), (-1, -1), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ])
+    )
+
+    story.append(recommendation_box)
+    story.append(Spacer(1, 14))
+
+    # ---------------------------------------------------------
+    # IMPORTANT INTERPRETATION NOTE
+    # ---------------------------------------------------------
+
+    story.append(
+        Paragraph(
+            "3. Important Interpretation Note",
+            section_style
+        )
+    )
+
+    note_text = (
+        "This report provides an image-based visual assessment of crop "
+        "condition and a screening assessment using the entered soil EC. "
+        "Plant photographs alone cannot directly measure soil salinity. "
+        "For actual salinity assessment, soil electrical conductivity "
+        "(EC) should be measured using an appropriate soil testing method. "
+        "Crop response can also be affected by irrigation, drainage, "
+        "nutrient availability, drought, disease and other environmental factors."
+    )
+
+    note_box = Table(
+        [
+            [
+                Paragraph(
+                    note_text,
+                    small_style
+                )
+            ]
+        ],
+        colWidths=[160 * mm]
+    )
+
+    note_box.setStyle(
+        TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), warning_bg),
+            ("BOX", (0, 0), (-1, -1), 0.8, warning_border),
+            ("LEFTPADDING", (0, 0), (-1, -1), 12),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+            ("TOPPADDING", (0, 0), (-1, -1), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ])
+    )
+
+    story.append(note_box)
+    story.append(Spacer(1, 12))
+
+    # ---------------------------------------------------------
+    # PROJECT DESCRIPTION
+    # ---------------------------------------------------------
+
+    story.append(
+        Paragraph(
+            "4. About the Project",
+            section_style
+        )
+    )
+
+    project_description = (
+        "Smart Soil Monitoring is an AI-assisted environmental monitoring "
+        "project designed to study visible crop responses associated with "
+        "soil salinity. The system combines plant image analysis, crop "
+        "growth-stage information and soil EC input to generate a "
+        "crop-health screening report and basic management guidance."
+    )
+
+    story.append(
+        Paragraph(
+            project_description,
+            body_style
+        )
+    )
+
+    story.append(Spacer(1, 10))
+
+    # ---------------------------------------------------------
+    # FINAL STATEMENT
+    # ---------------------------------------------------------
+
+    final_statement = Table(
+        [
+            [
+                Paragraph(
+                    "<b>Generated by Smart Soil Monitoring Application</b>",
+                    body_style
+                )
+            ]
+        ],
+        colWidths=[160 * mm]
+    )
+
+    final_statement.setStyle(
+        TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), very_light_green),
+            ("BOX", (0, 0), (-1, -1), 0.7, light_grey),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, -1), 8),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ])
+    )
+
+    story.append(final_statement)
+
+    # ---------------------------------------------------------
+    # BUILD PDF
+    # ---------------------------------------------------------
+
+    doc.build(
+        story,
+        onFirstPage=add_footer,
+        onLaterPages=add_footer
+    )
+
+    pdf_buffer.seek(0)
+
+    return pdf_buffer.getvalue()
 
 from image_analysis import analyze_plant_image
 
@@ -623,11 +1152,14 @@ if uploaded_file is not None:
     a soil electrical-conductivity (EC) test.
     """
 
+
+    pdf_data = create_pdf_report(report, recommendation)
+
     st.download_button(
-        label="📥 Download Crop Health Report",
-        data=report_text,
-        file_name="crop_health_report.txt",
-        mime="text/plain"
+        label="📄 Download Crop Health Report (PDF)",
+        data=pdf_data,
+        file_name="Smart_Soil_Crop_Health_Report.pdf",
+        mime="application/pdf"
     )
     # --------------------------------------------------
     # IMPORTANT NOTE
